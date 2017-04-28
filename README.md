@@ -1,12 +1,14 @@
 # slack-autostatus
-Automatically update Slack status (emoji) with your current Mac application/url
+Automatically update Slack status emoji with your current Mac application/url
 
 
 ## TLDR;
 
 Launch a plist that checks the frontmost app/webpage every 15s, associates it with an emoji, and sends it off via Slack's status API...
 
-## Installation (in three easy steps!):
+## Installation (in three easy steps!)
+
+
 
 ### Slack (API and Emoji):
 
@@ -15,6 +17,8 @@ Launch a plist that checks the frontmost app/webpage every 15s, associates it wi
 - Next, you're going to need a personal slack API token. Go [here](https://api.slack.com/custom-integrations/legacy-tokens) and request one from your slack administrators. 
 
 _ps. Keep this token secret - though the scope is limited to your account, it can read/post/etc as you!!_
+
+
 
 ### The slack-autostatus script:
 
@@ -30,11 +34,13 @@ chmod +x /usr/local/bin/slack-autostatus
 
 ... but regardless of your approach, you'll want the file to be executable
 
+
+
 ### The launchd (plist) file:
 
 Steady yourself: this is the final step
 
-- curl down the sample list file:
+- curl down the sample plist file:
 
 ```
 curl -o ~/Library/LaunchAgents/slack-autostatus.plist https://raw.githubusercontent.com/benpbolton/slack-autostatus/master/slack-autostatus.plist
