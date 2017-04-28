@@ -16,7 +16,7 @@
            <string>PUT_IT_HERE!!!</string>
     </dict>
     <key>Program</key>
-    <string>/PATH/TO/YOUR/slack-autostatus</string>
+    <string>/usr/local/bin/slack-autostatus</string>
     <key>StartInterval</key>
     <integer>15</integer>
     <key>ThrottleInterval</key>
