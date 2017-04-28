@@ -1,0 +1,212 @@
+#!/bin/bash -e
+#
+# Description:
+#   Update Slack status with emoji associated to
+#   the foremost app/url
+#
+# Dependencies:
+#   None
+#
+# Configuration:
+#   SLACK_PERSONAL_TOKEN - Slack testing/legacy token from https://api.slack.com/custom-integrations/legacy-tokens
+#
+# Commands:
+#   None
+#
+# Author:
+#   benpbolton
+
+
+# Ensure the environmental variable is present
+if [ -z $SLACK_PERSONAL_TOKEN ]; then
+	echo "Yikes! Missing SLACK_PERSONAL_TOKEN environmental variable" | \
+		sed $'s,.*,\e[31m&\e[m,' >&2
+	exit 1
+fi
+
+# true/false is screen saver running?
+screen_saver="$( osascript -- <<'EOF'
+	tell application "System Events"
+	set screenSaverRunning to get running of screen saver preferences
+	end tell
+	return screenSaverRunning
+EOF )"
+
+
+# Return a string emoji name appropriate for the url
+#
+# @param string browser: name/emoji to fall back to
+# @param string url: url of foremost app
+# @return string emoji name
+function emoji_from_browser_url {
+	browser="$1"
+	url="$2"
+	domain="$( echo $url | awk -F'/' '{print $3}' )"
+	case "$domain" in
+	  "www.google.com")
+	    echo "search"
+	    ;;
+	  "inbox.google.com")
+	    echo "e-mail"
+	    ;;
+	  "calendar.google.com")
+	    echo "calendar"
+	    ;;
+	  *stackoverflow.com|*stackexchange.com)
+	    echo "books"
+	    ;;
+	  *github.com)
+	    echo "github"
+	    ;;
+	  "travis-ci.com")
+	    echo "travis"
+	    ;;
+	  *pantheon.io)
+	    echo "pantheon"
+	    ;;
+	  *aws.amazon.com|*cloudflare.com)
+	    echo "cloud"
+	    ;;
+	  localhost*|*.dev|*alleyinteractive.com|*alley.ws)
+	    echo "alley"
+	    ;;
+	  *atlassian.net)
+		rand=$[$RANDOM % 4]
+		arr[0]="jira"
+		arr[1]="jira-hell"
+		arr[2]="jira-juggle"
+		arr[3]="jira-shrug"
+	  	echo "${arr[$rand]}"
+	    ;;
+	  *)
+		# Uncomment to add unknown domains to
+		# /tmp/unknowndomains.txt (for self-analysis or
+		# targetting of your next custom emoji :))
+		#
+		# grep -q -F "$domain" /tmp/unknowndomains.txt || \
+		#	echo "$domain" >> /tmp/unknowndomains.txt
+
+	  	echo "$browser"
+	esac
+}
+
+
+
+# If screensaver is running...
+if [[ $screen_saver == "true" ]]; then
+	status="zzz"
+else
+	current_app="$( osascript -- <<'EOF'
+	tell application "System Events"
+	set frontApp to name of first application process whose frontmost is true
+	end tell
+	return frontApp
+EOF )"
+
+	#... associate the app with a status
+	case "$current_app" in
+	  "Docker")
+	    status="whale"
+	    ;;
+	  "Sequel Pro"|"filezilla"|"GrandPerspective")
+	    status="floppy_disk"
+	    ;;
+	  "GIMP-bin")
+	    status="lower_left_paintbrush"
+	    ;;
+	  "iTerm2")
+	    status="code"
+	    ;;
+	  "Sublime Text")
+	    status="typing"
+	    ;;
+	  "Google Chrome")
+		url="$( osascript -- <<'EOF'
+			tell application "Google Chrome"
+			set urlName to URL of active tab of front window
+			end tell
+			return urlName
+EOF)"
+		tab_emoji="$( emoji_from_browser_url "chrome" "$url" )"
+	    status="$tab_emoji"
+	    ;;
+	  "Safari")
+		url="$( osascript -- <<'EOF'
+			tell application "Safari"
+			set urlName to URL of front document
+			end tell
+			return urlName
+EOF)"
+		tab_emoji="$( emoji_from_browser_url "safari" "$url" )"
+	    status="$tab_emoji"
+	    ;;
+	  "firefox")
+		# Don't you kinda wish firefox had enough
+		# osascript mojo to grab the foremost tab url?
+		# Me too: https://bugzilla.mozilla.org/show_bug.cgi?id=608049
+	    status="firefox"
+	    ;;
+	  "GIFs")
+	    status="troll"
+	    ;;
+	  "Slack")
+	    status="slack"
+	    ;;
+	  "Screen Sharing"|"VPN Unlimited")
+	    status="shifty-eyes"
+	    ;;
+	  "VirtualBox")
+	    status="computer"
+	    ;;
+	  "Tower")
+	    status="github"
+	    ;;
+	  "Console"|"App Store"|"Preview"|"Finder"|"System Preferences"|"Keychain Access")
+	    status="mac"
+	    ;;
+	  "Harvest")
+	    status="harvest"
+	    ;;
+	  "zoom.us")
+	    status="zoom"
+	    ;;
+	  *)
+		# You might want to seed a random emoji response
+		# rand=$[$RANDOM % 7]
+		# arr[0]="chrome"
+		# arr[1]="envelope"
+		# arr[2]="travis"
+		# arr[3]="github"
+		# arr[4]="heroku"
+		# arr[5]="alley"
+		# arr[6]="jira"
+	  	# status="${arr[$rand]}"
+
+	  	# Uncomment to creep on yourself for
+	  	# future awesome emoji
+	  	#
+	  	# echo "$current_app" >> /tmp/unknownapps.txt
+		status=""
+	esac
+fi
+
+# If our new status was our last status, don't bother doing anything
+if [[ "$status" != "$( cat /tmp/slack_status.last )" ]]; then
+
+	# If the status isn't blank...
+	if [[ "$status" != "" ]]; then
+		# Surround it with :colons:  :)
+		status="%3A$status%3A"
+	fi
+
+	# Store our status in /tmp/slack_status.last
+	echo "$status" > /tmp/slack_status.last
+
+	# Send the magic "legacy" api call out to slack...
+	curl -s -X POST \
+		--connect-timeout 2 \
+		--max-time 5 \
+		-d "token=$SLACK_PERSONAL_TOKEN&user=U1B39MZSN&profile=%7B%22status_text%22%3A%22%22%2C%22status_emoji%22%3A%22$status%22%7D" \
+		https://slack.com/api/users.profile.set > /dev/null
+
+fi

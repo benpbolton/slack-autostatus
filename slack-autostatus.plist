@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>KeepAlive</key>
+    <dict>
+        <key>NetworkState</key>
+        <true/>
+    </dict>
+    <key>Label</key>
+    <string>Slack Update Status</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+           <key>SLACK_PERSONAL_TOKEN</key>
+           <string>PUT_IT_HERE!!!</string>
+    </dict>
+    <key>Program</key>
+    <string>/PATH/TO/YOUR/slack-autostatus</string>
+    <key>StartInterval</key>
+    <integer>15</integer>
+    <key>ThrottleInterval</key>
+    <integer>0</integer>
+</dict>
+</plist>
