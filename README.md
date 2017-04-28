@@ -14,7 +14,7 @@ Launch a plist that checks the frontmost app/webpage every 15s, associates it wi
 
 - First things first: ensure your Slack team has the perfect emoji for apps/sites you care about. Slack has
  [great instructions here](https://get.slack.help/hc/en-us/articles/206870177-Create-custom-emoji)
-- Next, you're going to need a personal slack API token. Go [here](https://api.slack.com/custom-integrations/legacy-tokens) and request one from your slack administrators. 
+- Next, you're going to need a personal slack API token. Go [here](https://api.slack.com/custom-integrations/legacy-tokens) and request one from your slack administrators.
 
 _ps. Keep this token secret - though the scope is limited to your account, it can read/post/etc as you!!_
 
@@ -22,7 +22,7 @@ _ps. Keep this token secret - though the scope is limited to your account, it ca
 
 ### The slack-autostatus script:
 
-Whether you fork/clone, copy/paste, or hand-type, you'll want a copy of this script locally on your Mac. 
+Whether you fork/clone, copy/paste, or hand-type, you'll want a copy of this script locally on your Mac.
 
 You might:
 
@@ -58,5 +58,6 @@ launchctl load ~/Library/LaunchAgents/slack-autostatus.plist
 
 - :tada:
 
+![Sample Emoji](/essential-repository-asset.png "Turns out, I am using Slack")
 
 
