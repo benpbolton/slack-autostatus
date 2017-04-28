@@ -6,7 +6,7 @@ Automatically update Slack status (emoji) with your current Mac application/url
 
 Launch a plist that checks the frontmost app/webpage every 15s, associates it with an emoji, and sends it off via Slack's status API...
 
-## Installation:
+## Installation (in three easy steps!):
 
 ### Slack (API and Emoji):
 
