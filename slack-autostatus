@@ -206,7 +206,7 @@ if [[ "$status" != "$( cat /tmp/slack_status.last )" ]]; then
 	curl -s -X POST \
 		--connect-timeout 2 \
 		--max-time 5 \
-		-d "token=$SLACK_PERSONAL_TOKEN&user=U1B39MZSN&profile=%7B%22status_text%22%3A%22%22%2C%22status_emoji%22%3A%22$status%22%7D" \
+		-d "token=$SLACK_PERSONAL_TOKEN&profile=%7B%22status_text%22%3A%22%22%2C%22status_emoji%22%3A%22$status%22%7D" \
 		https://slack.com/api/users.profile.set > /dev/null
 
 fi
