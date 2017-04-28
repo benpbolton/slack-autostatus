@@ -34,6 +34,7 @@ chmod +x /usr/local/bin/slack-autostatus
 
 ... but regardless of your approach, you'll want the file to be executable
 
+_ps. Edit **this** file to add/remove applications/urls/emoji/etc_
 
 
 ### The launchd (plist) file:
