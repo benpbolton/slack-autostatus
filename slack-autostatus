@@ -152,7 +152,7 @@ EOF)"
 	  "Slack")
 	    status="slack"
 	    ;;
-	  "Screen Sharing"|"VPN Unlimited")
+	  "Screen Sharing"|"VPN Unlimited"|"Screenhero")
 	    status="shifty-eyes"
 	    ;;
 	  "VirtualBox")
