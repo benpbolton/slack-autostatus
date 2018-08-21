@@ -5,10 +5,11 @@
 #   the foremost app/url
 #
 # Dependencies:
-#   None
+#   opt. if SET_PRESENCE: pip install pyobjc-framework-Quartz
 #
 # Configuration:
 #   SLACK_PERSONAL_TOKEN - Slack testing/legacy token from https://api.slack.com/custom-integrations/legacy-tokens
+#	SET_PRESENCE - Set away/auto status based on whether laptop is locked
 #
 # Commands:
 #   None
@@ -32,6 +33,8 @@ screen_saver="$( osascript -- <<'EOF'
 	return screenSaverRunning
 EOF )"
 
+idle_time="$( ioreg -c IOHIDSystem  | awk '/HIDIdleTime/ {print $NF/1000000000; exit}' )"
+ten_minutes_idle=$( echo "$idle_time > 600" | bc )
 
 # Return a string emoji name appropriate for the url
 #
@@ -85,7 +88,7 @@ function emoji_from_browser_url {
 	  "infosphere.alley.ws")
 	    echo "infosphere"
 	    ;;
-	  localhost*|*.dev|*alleyinteractive.com|*alley.ws)
+	  localhost*|*.dev|*alleyinteractive.com|*alley.ws|*.alley.co)
 	    echo "alley"
 	    ;;
 	  *atlassian.net)
@@ -109,9 +112,8 @@ function emoji_from_browser_url {
 }
 
 
-
 # If screensaver is running...
-if [[ $screen_saver == "true" ]]; then
+if [[ $screen_saver == "true" || $ten_minutes_idle -ne 0 ]]; then
 	status="zzz"
 else
 	current_app="$( osascript -- <<'EOF'
@@ -173,7 +175,7 @@ EOF)"
 	  "Screen Sharing"|"VPN Unlimited"|"Screenhero")
 	    status="shifty-eyes"
 	    ;;
-	  "Citrix Viewer")
+	  "Citrix Viewer"|"Meeting Center"|"Microsoft Remote Desktop")
 	    status="globe_with_meridians"
 	    ;;
 	  "VirtualBox")
@@ -215,7 +217,7 @@ EOF)"
 fi
 
 # If our new status was our last status, don't bother doing anything
-if [[ "$status" != "$( cat /tmp/slack_status.last )" ]]; then
+if [[ "$status" != "$( cat /tmp/slack-autostatus.last )" ]]; then
 
 	# If the status isn't blank...
 	if [[ "$status" != "" ]]; then
@@ -223,8 +225,8 @@ if [[ "$status" != "$( cat /tmp/slack_status.last )" ]]; then
 		status="%3A$status%3A"
 	fi
 
-	# Store our status in /tmp/slack_status.last
-	echo "$status" > /tmp/slack_status.last
+	# Store our status in /tmp/slack-autostatus.last
+	echo "$status" > /tmp/slack-autostatus.last
 
 	# Send the magic "legacy" api call out to slack...
 	curl -s -X POST \
@@ -232,5 +234,30 @@ if [[ "$status" != "$( cat /tmp/slack_status.last )" ]]; then
 		--max-time 5 \
 		-d "token=$SLACK_PERSONAL_TOKEN&profile=%7B%22status_text%22%3A%22%22%2C%22status_emoji%22%3A%22$status%22%7D" \
 		https://slack.com/api/users.profile.set > /dev/null
+fi
 
+# If we check and set for presence based off lockscreen present
+if [ -n $SET_PRESENCE ]; then
+	# Temporarily allow errors for python subshell
+	set +e
+	locked="$( /usr/local/bin/python -c 'import sys,Quartz; d=Quartz.CGSessionCopyCurrentDictionary(); print d' | grep -c "CGSSessionScreenIsLocked = 1" )"
+	set -e
+	if [[ $locked -ne 0  ]]; then
+		presence='away'
+	else
+		presence='auto'
+	fi
+	# If our new presence was our last presence, don't bother doing anything
+	if [[ "$presence" != "$( cat /tmp/slack-autostatus.presence )" ]]; then
+
+		# Store our presence in /tmp/slack-autostatus.presence
+		echo "$presence" > /tmp/slack-autostatus.presence
+
+		# Send the magic "legacy" api call out to slack...
+		curl -s -X POST \
+			--connect-timeout 2 \
+			--max-time 5 \
+			-d "token=$SLACK_PERSONAL_TOKEN&presence=$presence" \
+			https://slack.com/api/users.setPresence > /dev/null
+	fi
 fi

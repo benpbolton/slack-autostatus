@@ -9,12 +9,22 @@
         <true/>
     </dict>
     <key>Label</key>
-    <string>Slack Update Status</string>
+    <string>Slack Auto Status</string>
     <key>EnvironmentVariables</key>
     <dict>
            <key>SLACK_PERSONAL_TOKEN</key>
            <string>PUT_IT_HERE!!!</string>
+<!-- If you want to also set presence (away/auto) based on lockscreen,
+     ensure you pip install pyobjc-framework-Quartz and uncomment this variable
+
+           <key>SET_PRESENCE</key>
+           <string>yup</string>
+-->
     </dict>
+    <key>StandardOutPath</key>
+    <string>/usr/local/var/log/slack-autostatus.log</string>
+    <key>StandardErrorPath</key>
+    <string>/usr/local/var/log/slack-autostatus.log</string>
     <key>Program</key>
     <string>/usr/local/bin/slack-autostatus</string>
     <key>StartInterval</key>
