@@ -240,7 +240,7 @@ fi
 if [ -n $SET_PRESENCE ]; then
 	# Temporarily allow errors for python subshell
 	set +e
-	locked="$( /usr/local/bin/python -c 'import sys,Quartz; d=Quartz.CGSessionCopyCurrentDictionary(); print d' | grep -c "CGSSessionScreenIsLocked = 1" )"
+	locked="$( /usr/local/bin/python -c 'import sys,Quartz; d=Quartz.CGSessionCopyCurrentDictionary(); print(d)' | grep -c "CGSSessionScreenIsLocked = 1" )"
 	set -e
 	if [[ $locked -ne 0  ]]; then
 		presence='away'
