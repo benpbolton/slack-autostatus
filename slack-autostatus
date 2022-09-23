@@ -88,7 +88,7 @@ function emoji_from_browser_url {
 	  "infosphere.alley.ws")
 	    echo "infosphere"
 	    ;;
-	  localhost*|*.dev|*alleyinteractive.com|*alley.ws|*.alley.co)
+	  localhost*|*.dev|*alleyinteractive.com|*alley.ws|*.alley.co|*.alley.com|*getscrum.app)
 	    echo "alley"
 	    ;;
 	  *atlassian.net)
@@ -137,8 +137,18 @@ EOF )"
 	  "iTerm2")
 	    status="code"
 	    ;;
-	  "Sublime Text"|"TextEdit")
+	  "Sublime Text"|"TextEdit"|"Element"|"Electron")
 	    status="typing"
+	    ;;
+	  "Brave Browser")
+		url="$( osascript -- <<'EOF'
+			tell application "Brave Browser"
+			set urlName to URL of active tab of front window
+			end tell
+			return urlName
+EOF)"
+		tab_emoji="$( emoji_from_browser_url "chrome" "$url" )"
+	    status="$tab_emoji"
 	    ;;
 	  "Google Chrome")
 		url="$( osascript -- <<'EOF'
